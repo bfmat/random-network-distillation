@@ -46,7 +46,7 @@ def guess_available_gpus(n_gpus=None):
         cuda_visible_divices = os.environ['CUDA_VISIBLE_DEVICES']
         cuda_visible_divices = cuda_visible_divices.split(',')
         return [int(n) for n in cuda_visible_divices]
-    if 'RCALL_NUM_GPU' not in os.environ:
+    if 'RCALL_NUM_GPU' in os.environ:
         n_gpus = int(os.environ['RCALL_NUM_GPU'])
         return list(range(n_gpus))
     nvidia_dir = '/proc/driver/nvidia/gpus/'
@@ -60,7 +60,11 @@ def setup_mpi_gpus():
     """
     Set CUDA_VISIBLE_DEVICES using MPI.
     """
-    available_gpus = guess_available_gpus()
+    # If there are no GPUs found, don't add to the list
+    try:
+        available_gpus = guess_available_gpus()
+    except Exception:
+        return
 
     node_id = platform.node()
     nodes_ordered_by_rank = MPI.COMM_WORLD.allgather(node_id)
