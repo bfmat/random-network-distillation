@@ -4,6 +4,7 @@ import gym
 from gym import spaces
 import cv2
 from copy import copy
+from collect_gym_dataset import CollectGymDataset
 
 cv2.ocl.setUseOpenCL(False)
 
@@ -221,6 +222,7 @@ def wrap_deepmind(env, clip_rewards=True, frame_stack=False, scale=False):
     if frame_stack:
         env = FrameStack(env, 4)
     # env = NormalizeObservation(env)
+    env = CollectGymDataset(env, '~/outputs')
     return env
 
 
