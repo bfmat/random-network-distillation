@@ -344,8 +344,8 @@ class PpoAgent(object):
         if self.I.venvs[0].record_obs:
             to_record['obs'] = self.I.buf_obs[None]
         print('to_record set ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
-        self.recorder.record(bufs=to_record,
-                             infos=self.I.buf_epinfos)
+        #self.recorder.record(bufs=to_record,
+        #                     infos=self.I.buf_epinfos)
         print('record done $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
 
 
@@ -522,6 +522,8 @@ class PpoAgent(object):
 
         #Some reporting logic.
         for epinfo in epinfos:
+            epinfo['r'] = sum(epinfo['reward'])
+            epinfo['l'] = len(epinfo['reward'])
             if self.testing:
                 self.I.statlists['eprew_test'].append(epinfo['r'])
                 self.I.statlists['eplen_test'].append(epinfo['l'])
