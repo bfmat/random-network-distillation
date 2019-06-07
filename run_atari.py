@@ -143,6 +143,7 @@ def main():
     )
 
     tf_util.make_session(make_default=True)
+    print('Executing train from outside &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
     train(env_id=args.env, num_env=args.num_env, seed=seed,
         num_timesteps=args.num_timesteps, hps=hps)
 
