@@ -156,8 +156,6 @@ class MontezumaInfoWrapper(gym.Wrapper):
             if 'episode' not in info:
                 info['episode'] = {}
             info['episode'].update(visited_rooms=copy(self.visited_rooms))
-            print('ADDING VISITED ROOMS')
-            print('INFO AT MONTEZUMA:', info)
             self.visited_rooms.clear()
         return obs, rew, done, info
 
@@ -189,7 +187,6 @@ class AddRandomStateToInfo(gym.Wrapper):
 
     def step(self, action):
         ob, r, d, info = self.env.step(action)
-        print('INFO:', info)
         if d:
             if 'episode' not in info:
                 info['episode'] = {}
