@@ -35,6 +35,7 @@ def train(*, env_id, num_env, hps, num_timesteps, seed):
     gamma = hps.pop('gamma')
     policy = {'rnn': CnnGruPolicy,
               'cnn': CnnPolicy}[hps.pop('policy')]
+    print('Running train ==========================================')
     agent = PpoAgent(
         scope='ppo',
         ob_space=ob_space,
@@ -92,7 +93,7 @@ def main():
     parser = arg_parser()
     add_env_params(parser)
     parser.add_argument('--num-timesteps', type=int, default=int(1e12))
-    parser.add_argument('--num_env', type=int, default=32)
+    parser.add_argument('--num_env', type=int, default=1)
     parser.add_argument('--use_news', type=int, default=0)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--gamma_ext', type=float, default=0.99)
