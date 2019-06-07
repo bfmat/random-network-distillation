@@ -156,6 +156,8 @@ class MontezumaInfoWrapper(gym.Wrapper):
             if 'episode' not in info:
                 info['episode'] = {}
             info['episode'].update(visited_rooms=copy(self.visited_rooms))
+            print('ADDING VISITED ROOMS')
+            print('INFO AT MONTEZUMA:', info)
             self.visited_rooms.clear()
         return obs, rew, done, info
 
@@ -187,6 +189,7 @@ class AddRandomStateToInfo(gym.Wrapper):
 
     def step(self, action):
         ob, r, d, info = self.env.step(action)
+        print('INFO:', info)
         if d:
             if 'episode' not in info:
                 info['episode'] = {}
@@ -205,6 +208,7 @@ def make_atari(env_id, max_episode_steps=4500):
     env = StickyActionEnv(env)
     env = MaxAndSkipEnv(env, skip=4)
     if "Montezuma" in env_id or "Pitfall" in env_id:
+        print('ADDING MONTEZUMA WRAPPER ================================')
         env = MontezumaInfoWrapper(env, room_address=3 if "Montezuma" in env_id else 1)
     else:
         env = DummyMontezumaInfoWrapper(env)

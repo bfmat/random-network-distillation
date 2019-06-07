@@ -225,6 +225,7 @@ class PpoAgent(object):
 
     @logger.profile("update")
     def update(self):
+        print('Update function begun')
 
         #Some logic gathering best ret, rooms etc using MPI.
         temp = sum(MPI.COMM_WORLD.allgather(self.local_rooms), [])
@@ -242,7 +243,9 @@ class PpoAgent(object):
         local_best_rets = MPI.COMM_WORLD.allgather(self.local_best_ret)
         n_rooms = sum(MPI.COMM_WORLD.allgather([len(self.local_rooms)]), [])
 
-        if MPI.COMM_WORLD.Get_rank() == 0:
+        print('Logging of rooms begun')
+
+        if False: # MPI.COMM_WORLD.Get_rank() == 0:
             logger.info(f"Rooms visited {self.rooms}")
             logger.info(f"Best return {self.best_ret}")
             logger.info(f"Best local return {sorted(local_best_rets)}")
@@ -253,6 +256,8 @@ class PpoAgent(object):
             logger.info(f"Gamma ext {self.gamma_ext}")
             logger.info(f"All scores {sorted(self.scores)}")
 
+
+        print('Logging of rooms visited and stuff is done')
 
         #Normalize intrinsic rewards.
         rffs_int = np.array([self.I.rff_int.update(rew) for rew in self.I.buf_rews_int.T])
@@ -265,6 +270,7 @@ class PpoAgent(object):
         rews_ext = self.I.buf_rews_ext
 
         rewmean, rewstd, rewmax = self.I.buf_rews_int.mean(), self.I.buf_rews_int.std(), np.max(self.I.buf_rews_int)
+        print('Normalization stuff is done')
 
         #Calculate intrinsic returns and advantages.
         lastgaelam = 0
@@ -278,6 +284,7 @@ class PpoAgent(object):
             delta = rews_int[:, t] + self.gamma * nextvals * nextnotnew - self.I.buf_vpreds_int[:, t]
             self.I.buf_advs_int[:, t] = lastgaelam = delta + self.gamma * self.lam * nextnotnew * lastgaelam
         rets_int = self.I.buf_advs_int + self.I.buf_vpreds_int
+        print('Intrinsic returns calculated')
 
         #Calculate extrinsic returns and advantages.
         lastgaelam = 0
@@ -289,6 +296,7 @@ class PpoAgent(object):
             delta = rews_ext[:, t] + self.gamma_ext * nextvals * nextnotnew - self.I.buf_vpreds_ext[:, t]
             self.I.buf_advs_ext[:, t] = lastgaelam = delta + self.gamma_ext * self.lam * nextnotnew * lastgaelam
         rets_ext = self.I.buf_advs_ext + self.I.buf_vpreds_ext
+        print('Extrinsic returns calculated')
 
         #Combine the extrinsic and intrinsic advantages.
         self.I.buf_advs = self.int_coeff*self.I.buf_advs_int + self.ext_coeff*self.I.buf_advs_ext
@@ -317,6 +325,7 @@ class PpoAgent(object):
             best_ret = self.best_ret,
             reset_counter = self.I.reset_counter
         )
+        print('Info collected')
 
         info[f'mem_available'] = psutil.virtual_memory().available
 
@@ -334,8 +343,10 @@ class PpoAgent(object):
                      }
         if self.I.venvs[0].record_obs:
             to_record['obs'] = self.I.buf_obs[None]
+        print('to_record set ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
         self.recorder.record(bufs=to_record,
                              infos=self.I.buf_epinfos)
+        print('record done $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
 
 
         #Create feeddict for optimization.
@@ -353,7 +364,8 @@ class PpoAgent(object):
                 (self.stochpol.ph_new, self.I.buf_news),
             ])
 
-        verbose = True
+        print('going to logger.info ***********************************')
+        verbose = False
         if verbose and self.is_log_leader:
             samples = np.prod(self.I.buf_advs.shape)
             logger.info("buffer shape %s, samples_per_mpi=%i, mini_per_mpi=%i, samples=%i, mini=%i " % (
@@ -361,10 +373,12 @@ class PpoAgent(object):
                     samples, samples//self.nminibatches,
                     samples*self.comm_train_size, samples*self.comm_train_size//self.nminibatches))
             logger.info(" "*6 + fmt_row(13, self.loss_names))
+        print('did logger.info #######################################')
 
 
         epoch = 0
         start = 0
+        print('NEPOCHS IS', self.nepochs)
         #Optimizes on current data for several epochs.
         while epoch < self.nepochs:
             end = start + envsperbatch
@@ -390,7 +404,8 @@ class PpoAgent(object):
             if verbose and self.is_log_leader:
                 logger.info("%i:%03i %s" % (epoch, start, fmt_row(13, [lossdict[n] for n in self.loss_names])))
             start += envsperbatch
-            if start == self.I.nenvs:
+            print('epoch info:', start, self.I.nenvs, epoch, envsperbatch)
+            if start >= self.I.nenvs:
                 epoch += 1
                 start = 0
 
@@ -437,10 +452,8 @@ class PpoAgent(object):
                     #Information like rooms visited is added to info on end of episode.
                     epinfos.append(info['episode'])
                     info_with_places = info['episode']
-                    try:
+                    if 'visited_rooms' in info['episode']:
                         info_with_places['places'] = info['episode']['visited_rooms']
-                    except:
-                        import ipdb; ipdb.set_trace()
                     self.I.buf_epinfos[env_pos_in_lump+l*self.I.lump_stride][t] = info_with_places
 
             sli = slice(l * self.I.lump_stride, (l + 1) * self.I.lump_stride)
