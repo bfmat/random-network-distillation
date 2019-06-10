@@ -59,9 +59,13 @@ class Monitor(Wrapper):
             raise RuntimeError("Tried to step environment that needs reset")
         ob, rew, done, info = self.env.step(action)
         self.rewards.append(rew)
+        if rew != 0:
+            pass
+            #print('other reward:', rew)
+            #print(self.rewards)
         if done:
             self.needs_reset = True
-            eprew = sum(self.rewards)
+            eprew = np.nansum(self.rewards)
             eplen = len(self.rewards)
             epinfo = {"r": round(eprew, 6), "l": eplen, "t": round(time.time() - self.tstart, 6)}
             for k in self.info_keywords:

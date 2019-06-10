@@ -523,6 +523,7 @@ class PpoAgent(object):
         #Some reporting logic.
         for epinfo in epinfos:
             epinfo['r'] = sum(epinfo['reward'])
+            print('r:', epinfo['r'])
             epinfo['l'] = len(epinfo['reward'])
             if self.testing:
                 self.I.statlists['eprew_test'].append(epinfo['r'])

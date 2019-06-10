@@ -242,4 +242,6 @@ class StickyActionEnv(gym.Wrapper):
             action = self.last_action
         self.last_action = action
         obs, reward, done, info = self.env.step(action)
+        if reward != 0:
+            pass #print('reward:', reward)
         return obs, reward, done, info
