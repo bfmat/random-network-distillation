@@ -215,6 +215,7 @@ def make_atari(env_id, max_episode_steps=4500):
 def wrap_deepmind(env, clip_rewards=True, frame_stack=False, scale=False):
     """Configure environment for DeepMind-style Atari.
     """
+    env = CollectGymDataset(env, '~/outputs')
     env = WarpFrame(env)
     if scale:
         env = ScaledFloatFrame(env)
@@ -223,7 +224,6 @@ def wrap_deepmind(env, clip_rewards=True, frame_stack=False, scale=False):
     if frame_stack:
         env = FrameStack(env, 4)
     # env = NormalizeObservation(env)
-    env = CollectGymDataset(env, '~/outputs')
     return env
 
 
