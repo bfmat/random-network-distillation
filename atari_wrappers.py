@@ -54,6 +54,14 @@ class ClipRewardEnv(gym.RewardWrapper):
         """Bin reward to {+1, 0, -1} by its sign."""
         return float(np.sign(reward))
 
+class NoRewardEnv(gym.RewardWrapper):
+    def __init__(self, env):
+        gym.RewardWrapper.__init__(self, env)
+
+    def reward(self, reward):
+        """Return zero reward."""
+        return 0
+
 class WarpFrame(gym.ObservationWrapper):
     def __init__(self, env):
         """Warp frames to 84x84 as done in the Nature paper and later work."""
@@ -215,12 +223,13 @@ def make_atari(env_id, max_episode_steps=4500):
 def wrap_deepmind(env, clip_rewards=True, frame_stack=False, scale=False):
     """Configure environment for DeepMind-style Atari.
     """
-    env = CollectGymDataset(env, '~/outputs')
+    env = CollectGymDataset(env, '~/rnd_outputs')
     env = WarpFrame(env)
     if scale:
         env = ScaledFloatFrame(env)
-    if clip_rewards:
-        env = ClipRewardEnv(env)
+    #if clip_rewards:
+    #    env = ClipRewardEnv(env)
+    env = NoRewardEnv(env)
     if frame_stack:
         env = FrameStack(env, 4)
     # env = NormalizeObservation(env)
