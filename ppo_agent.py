@@ -156,8 +156,8 @@ class PpoAgent(object):
             neglogpac = self.stochpol.pd_opt.neglogp(self.stochpol.ph_ac)
             entropy = tf.reduce_mean(self.stochpol.pd_opt.entropy())
             vf_loss_int = (0.5 * vf_coef) * tf.reduce_mean(tf.square(self.stochpol.vpred_int_opt - self.ph_ret_int))
-            #vf_loss_ext = (0.5 * vf_coef) * tf.reduce_mean(tf.square(self.stochpol.vpred_ext_opt - self.ph_ret_ext))
-            vf_loss = vf_loss_int #+ vf_loss_ext
+            vf_loss_ext = (0.5 * vf_coef) * tf.reduce_mean(tf.square(self.stochpol.vpred_ext_opt - self.ph_ret_ext))
+            vf_loss = vf_loss_int + vf_loss_ext
             ratio = tf.exp(self.ph_oldnlp - neglogpac) # p_new / p_old
             negadv = - self.ph_adv
             pg_losses1 = negadv * ratio
@@ -299,7 +299,7 @@ class PpoAgent(object):
         print('Extrinsic returns calculated')
 
         #Combine the extrinsic and intrinsic advantages.
-        self.I.buf_advs = self.int_coeff*self.I.buf_advs_int #+ self.ext_coeff*self.I.buf_advs_ext
+        self.I.buf_advs = self.int_coeff*self.I.buf_advs_int + self.ext_coeff*self.I.buf_advs_ext
 
         #Collects info for reporting.
         info = dict(
