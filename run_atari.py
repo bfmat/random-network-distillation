@@ -14,11 +14,11 @@ from utils import set_global_seeds
 from vec_env import VecFrameStack
 
 
-def train(*, env_id, num_env, hps, num_timesteps, seed):
+def train(*, env_id, num_env, hps, num_timesteps, seed, use_reward, ep_path):
     venv = VecFrameStack(
         make_atari_env(env_id, num_env, seed, wrapper_kwargs=dict(),
                        start_index=num_env * MPI.COMM_WORLD.Get_rank(),
-                       max_episode_steps=hps.pop('max_episode_steps')),
+                       max_episode_steps=hps.pop('max_episode_steps'), use_reward=use_reward, ep_path=ep_path),
         hps.pop('frame_stack'))
     # venv.score_multiple = {'Mario': 500,
     #                        'MontezumaRevengeNoFrameskip-v4': 100,
@@ -63,7 +63,7 @@ def train(*, env_id, num_env, hps, num_timesteps, seed):
         comm=MPI.COMM_WORLD if MPI.COMM_WORLD.Get_size() > 1 else None,
         update_ob_stats_every_step=hps.pop('update_ob_stats_every_step'),
         int_coeff=hps.pop('int_coeff'),
-        ext_coeff=hps.pop('ext_coeff'),
+        ext_coeff=hps.pop('ext_coeff')
     )
     agent.start_interaction([venv])
     if hps.pop('update_ob_stats_from_random_agent'):
@@ -87,6 +87,8 @@ def add_env_params(parser):
     parser.add_argument('--env', help='environment ID', default='MontezumaRevengeNoFrameskip-v4')
     parser.add_argument('--seed', help='RNG seed', type=int, default=0)
     parser.add_argument('--max_episode_steps', type=int, default=4500)
+    parser.add_argument('--use_reward', type=int, default=0)
+    parser.add_argument('--ep_path', default='/tmp')
 
 
 def main():
@@ -145,7 +147,7 @@ def main():
     tf_util.make_session(make_default=True)
     print('Executing train from outside &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&')
     train(env_id=args.env, num_env=args.num_env, seed=seed,
-        num_timesteps=args.num_timesteps, hps=hps)
+        num_timesteps=args.num_timesteps, hps=hps, use_reward=args.use_reward, ep_path=args.ep_path)
 
 
 if __name__ == '__main__':

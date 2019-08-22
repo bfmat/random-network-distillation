@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from collections import deque
 import gym
@@ -220,16 +221,18 @@ def make_atari(env_id, max_episode_steps=4500):
     env = AddRandomStateToInfo(env)
     return env
 
-def wrap_deepmind(env, clip_rewards=True, frame_stack=False, scale=False):
+def wrap_deepmind(env, clip_rewards=True, frame_stack=False, scale=False, use_reward=None, ep_path=None):
     """Configure environment for DeepMind-style Atari.
     """
-    env = CollectGymDataset(env, '~/rnd_outputs_mz')
+    env = CollectGymDataset(env, os.path.expanduser(ep_path))
     env = WarpFrame(env)
     if scale:
         env = ScaledFloatFrame(env)
-    #if clip_rewards:
-    #    env = ClipRewardEnv(env)
-    env = NoRewardEnv(env)
+    if use_reward:
+        if clip_rewards:
+            env = ClipRewardEnv(env)
+    else:
+        env = NoRewardEnv(env)
     if frame_stack:
         env = FrameStack(env, 4)
     # env = NormalizeObservation(env)
