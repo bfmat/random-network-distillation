@@ -250,7 +250,7 @@ class StickyActionEnv(gym.Wrapper):
         return self.env.reset()
 
     def step(self, action):
-        if self.unwrapped.np_random.uniform() < self.p:
+        if np.random.uniform() < self.p:
             action = self.last_action
         self.last_action = action
         obs, reward, done, info = self.env.step(action)

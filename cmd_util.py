@@ -9,7 +9,8 @@ from gym.wrappers import FlattenDictWrapper
 from mpi4py import MPI
 from baselines import logger
 from monitor import Monitor
-from atari_wrappers import make_atari, wrap_deepmind
+from atari_wrappers import make_atari, wrap_deepmind, NoRewardEnv
+from dmlab_utils import make_dmlab
 from vec_env import SubprocVecEnv
 
 
@@ -27,6 +28,16 @@ def make_atari_env(env_id, num_env, seed, wrapper_kwargs=None, start_index=0, ma
         return _thunk
     # set_global_seeds(seed)
     return SubprocVecEnv([make_env(i + start_index) for i in range(num_env)])
+
+def make_dmlab_env(env_id, num_env, ep_path, use_reward):
+    def make_env(env_id, ep_path, use_reward):
+        def _thunk():
+            env = make_dmlab(env_id, ep_path)
+            if not use_reward:
+                env = NoRewardEnv(env)
+            return env
+        return _thunk
+    return SubprocVecEnv([make_env(env_id, ep_path, use_reward) for _ in range(num_env)])
 
 def arg_parser():
     """
