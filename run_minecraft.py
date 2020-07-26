@@ -8,6 +8,7 @@ from mpi4py import MPI
 import mpi_util
 import tf_util
 from cmd_util import make_atari_env, make_dmlab_env, arg_parser
+from collect_gym_dataset import CollectGymDataset
 from minecraft_wrappers import Minecraft
 from policies.cnn_gru_policy_dynamics import CnnGruPolicy
 from policies.cnn_policy_param_matched import CnnPolicy
@@ -17,7 +18,7 @@ from vec_env import VecFrameStack
 
 
 def train(*, env_id, num_env, hps, num_timesteps, seed, use_reward, ep_path, dmlab):
-    venv = VecFrameStack(DummyVecEnv([lambda: Minecraft('MineRLTreechop-v0', 'treechop')]), hps.pop('frame_stack'))
+    venv = VecFrameStack(DummyVecEnv([lambda: CollectGymDataset(Minecraft('MineRLTreechop-v0', 'treechop'), ep_path, atari=False)]), hps.pop('frame_stack'))
     venv.score_multiple = 1
     venv.record_obs = True if env_id == 'SolarisNoFrameskip-v4' else False
     ob_space = venv.observation_space
@@ -76,7 +77,7 @@ def train(*, env_id, num_env, hps, num_timesteps, seed, use_reward, ep_path, dml
 def add_env_params(parser):
     parser.add_argument('--env', help='environment ID', default='MontezumaRevengeNoFrameskip-v4')
     parser.add_argument('--seed', help='RNG seed', type=int, default=0)
-    parser.add_argument('--max_episode_steps', type=int, default=4500)
+    #parser.add_argument('--max_episode_steps', type=int, default=4500)
     parser.add_argument('--use_reward', type=int, default=0)
     parser.add_argument('--ep_path', default='/tmp')
     parser.add_argument('--dmlab', type=int, default=0)
@@ -116,14 +117,14 @@ def main():
 
     hps = dict(
         frame_stack=4,
-        nminibatches=4,
+        nminibatches=1,
         nepochs=4,
         lr=0.0001,
         max_grad_norm=0.0,
         use_news=args.use_news,
         gamma=args.gamma,
         gamma_ext=args.gamma_ext,
-        max_episode_steps=args.max_episode_steps,
+        #max_episode_steps=args.max_episode_steps,
         lam=args.lam,
         update_ob_stats_every_step=args.update_ob_stats_every_step,
         update_ob_stats_independently_per_gpu=args.update_ob_stats_independently_per_gpu,
